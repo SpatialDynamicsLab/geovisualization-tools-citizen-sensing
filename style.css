@@ -1,0 +1,44 @@
+body {
+    /* margin: 20px;
+    margin-top: 40px; */
+    /* padding: 10px;
+    border: solid 2px black; */
+    background-color:rgba(58, 25, 119, 0.8);
+    text-align: center;
+}
+
+button {
+  margin : 20px;
+}
+
+p {
+  margin : 20px;
+  
+}
+
+#query-form {
+  display:flex;
+  /* max-height: 10vh; */
+  /* grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr; */
+}
+
+select {
+  /* max-height: 30px */
+  margin : 20px;
+
+}
+
+#property-select {
+  min-width: 200px;
+}
+
+
+
+#map { 
+  height: 80vh;
+  margin-top: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+  z-index: 0;
+}
