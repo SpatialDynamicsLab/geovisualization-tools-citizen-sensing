@@ -11,7 +11,8 @@ class App {
         
         this.queryForm = new QueryForm("query-form");
         this.apiURL = "https://score.sta.tero.gr/v1.0";
-        this.mapManager = new MapManager()
+        // this.apiURL = "https://toronto-bike-snapshot.sensorup.com/v1.0"
+        this.mapManager = new MapManager([[54.209196,13.671665],[38.543655,-8.509294]])
 
     }
 
@@ -50,10 +51,10 @@ class App {
 
 class MapManager {
 
-    constructor() {
+    constructor(defaultBounds) {
 
         this.map = null;
-        this.defaultBounds = [[54.209196,13.671665],[38.543655,-8.509294]]
+        this.defaultBounds = defaultBounds
         this.markerGroup = null;
     }
 
@@ -70,7 +71,7 @@ class MapManager {
 
     }
 
-    displayMarkers(dataValue,api) {
+    displayMarkers(dataValue) {
 
         this.markerGroup.clearLayers();
 
@@ -105,6 +106,7 @@ class MapManager {
 
     createDatastreamMarker(datastream) {
 
+        // console.log(datastream)
         const [lng,lat] = datastream.Thing.Locations[0].location.coordinates;
 
 
@@ -184,7 +186,7 @@ class Filter {
 
     constructor(selectId) {
         this.select = document.getElementById(selectId);
-        console.log(this.getSelectedValue())
+        // console.log(this.getSelectedValue())
     }
 
     getSelect() {
@@ -260,12 +262,14 @@ class SensorThingsAPI {
     async logObservations(datastreamID) {
 
         const observations = await this.getObservations(datastreamID)
+        
         console.log(observations)
+        console.log(observations[0].phenomenonTime)
     }
 
     async addObservedPropertyOptions(filter) {
 
-        const queryURL = `${this.apiURL}/ObservedProperties?$orderby=@iot.id`;
+        const queryURL = `${this.apiURL}/ObservedProperties?$orderby=id`;
         const data = await this.fetchData(queryURL);
 
         data.value.forEach( (property) => {
@@ -283,14 +287,26 @@ class SensorThingsAPI {
         
         let queryURL = this.apiURL;
 
-        queryURL = `${queryURL}/Datastreams?$expand=Sensor,ObservedProperty,Thing/Locations&$orderby=@iot.id`;
+        queryURL = `${queryURL}/Datastreams?$expand=Sensor,ObservedProperty,Thing/Locations&$orderby=id`;
 
-        if (ccllValue != "-1") {
-            queryURL = `${queryURL}&$filter=Thing/properties/CCLL eq '${ccllValue}'`
-        }
+
         if (propID != "-1") {
-            queryURL = `${queryURL}&$filter=ObservedProperty/@iot.id eq ${propID}`
-        } 
+            queryURL = `${queryURL}&$filter=ObservedProperty/id eq ${propID}`
+            
+
+            if (ccllValue != "-1") {
+
+                queryURL = `${queryURL} and Thing/properties/CCLL eq '${ccllValue}'`
+            }
+
+        } else {
+            
+            if (ccllValue != "-1") {
+
+                queryURL = `${queryURL}&$filter=Thing/properties/CCLL eq '${ccllValue}'`
+            }
+        }
+        
 
 
 
