@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <title>SCORE Sensors Visualisation</title>
+        <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.2/dist/leaflet.css"
+        integrity="sha256-sA+zWATbFveLLNqWO2gtiw3HL/lh1giY/Inf1BJ0z14="
+        crossorigin=""/> -->
+        <link rel="stylesheet" href="/dist/style.css">
+    </head>
+    
+
+    <body class="bg-purple-900 text-center">
+        
+        <form id="query-form" class="flex">
+
+            <p class="my-auto mx-4">Observed Property</p>
+            <select id="property-select" class="m-4 px-4 min-w-[250px] rounded">
+              <option value="-1">(All)</option>
+            </select>
+        
+            <p class="my-auto mx-4">CCLL</p>
+            <select id="ccll-select" class="m-4 px-4 min-w-[150px] rounded">
+              <option value="-1">(All)</option>
+            </select>
+        
+            <button id="query-button" class="m-4 py-2 px-4 border bg-gray-200 text-gray-800 font-medium border-gray-300 rounded hover:bg-gray-300">Query</button>
+
+        </form>
+        
+        <div id="map-wrapper" class="relative h-[1000px] max-h-[85vh] mx-2">
+    
+            <div id="map" class="z-0 h-full"></div>
+        
+            <div id="data-panel"
+                class="absolute z-30 top-0 right-0 hidden flex-col items-center h-full w-1/3 min-w-[300px] overflow-x-hidden overflow-y-auto bg-white bg-opacity-90 shadow-inner">
+                   
+                    <button id="close-button" class="absolute top-0 right-0 m-1 px-2 py-1 border bg-gray-200 text-gray-800 font-medium border-gray-300 rounded hover:bg-gray-300">X</button>
+                    
+                    <div id="datastreams-selection-page" class="hidden flex-col items-center p-4"></div>
+                    
+                    <div id="datastream-results-page" class="hidden flex-col items-start text-left p-4"></div>
+                    <!-- <div id="datastream-page" class="flex flex-col items-start p-20"></div> -->
+
+            </div>
+            
+    
+        </div>
+        
+            
+
+    
+    
+
+        
+        <script src="https://unpkg.com/leaflet@1.9.2/dist/leaflet.js"
+        integrity="sha256-o9N1jGDZrf5tS+Ft4gbIK7mYMipq9lqpVJ91xHSyKhg=" crossorigin=""></script>
+        <script src="sensors_client.js"></script>
+    
+    </body>
+
+</html>
