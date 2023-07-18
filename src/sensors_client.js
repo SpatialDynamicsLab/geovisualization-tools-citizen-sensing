@@ -129,7 +129,9 @@ class MapManager {
         return marker
     }
 
-
+    getDataPanel() {
+        return this.dataPanel
+    }
     
 
 }
@@ -178,6 +180,7 @@ class QueryForm {
         console.log(dataValue)
 
         App.getInstance().getMapManager().displayMarkers(dataValue)
+        App.getInstance().getMapManager().getDataPanel().close()
         
     }
 
@@ -249,7 +252,7 @@ class DataPanel {
 
     }
 
-    initDatastreamResultsPage(datastream) {
+    async initDatastreamResultsPage(datastream) {
 
         this.clearElementContent(this.datastreamResultsPage)
 
@@ -264,12 +267,47 @@ class DataPanel {
         
 
         const api =  SensorThingsAPI.getInstance(App.getInstance().apiEndpoint)
-        api.logObservations(datastream["@iot.id"])
+        
+
+        //Observations display
+        const observations = await api.getObservations(datastream["@iot.id"])
+        console.log(observations)
+
+        const plotDiv = document.createElement("div")
+        plotDiv.classList.add("max-w-96","max-h-96")
+        this.plotObservations(observations,plotDiv)
+        this.datastreamResultsPage.appendChild(plotDiv)
+
+               
     }
 
 
     setEventListeners() {
-        this.closeButton.addEventListener('click', this.close.bind(this));
+        this.closeButton.addEventListener('click', e => this.close.bind(this)());
+
+    }
+
+    plotObservations(observations,plotDiv) {
+
+        const [timeList, valueList] = observations.reduce(
+            (lists, observation) => {
+              lists[0].push(observation.phenomenonTime);
+              lists[1].push(observation.result);
+              return lists;
+            },
+            [[], []]
+        );
+
+        Plotly.newPlot(plotDiv,[{
+            x: timeList,
+            y: valueList }], {
+            margin: { t: 0 },
+            width: 400,
+            height: 300
+        
+        } );
+
+        console.log(timeList,valueList)    
 
     }
 
@@ -283,7 +321,7 @@ class DataPanel {
         
     }
 
-    close(event) {
+    close() {
 
         this.hideElement(this.panelDiv)
         this.hideElement(this.datastreamsSelectionPage)
@@ -347,7 +385,7 @@ class SensorThingsAPI {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-        console.log(data)
+        // console.log(data)
         return data;
       } catch (error) {
         console.error('Error:', error);
@@ -362,10 +400,9 @@ class SensorThingsAPI {
     //     return data.value;
     // }
   
-    //(only the 100 first observations for now)
     async getObservations(datastreamID) {
 
-        const queryURL = `${this.apiEndpoint}/Datastreams(${datastreamID})/Observations`;
+        const queryURL = `${this.apiEndpoint}/Datastreams(${datastreamID})/Observations?$orderby=id desc&$select=phenomenonTime,result,id&$top=100`;
         const data = await this.fetchData(queryURL);
         console.log(queryURL)
         return data.value;
@@ -375,8 +412,7 @@ class SensorThingsAPI {
 
         const observations = await this.getObservations(datastreamID)
         
-        console.log(observations)
-        console.log(observations[0].phenomenonTime)
+        console.log("observations",observations)
     }
 
     async addObservedPropertyOptions(filter) {

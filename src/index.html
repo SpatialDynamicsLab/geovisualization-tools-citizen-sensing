@@ -3,10 +3,9 @@
     <head>
         <meta charset="UTF-8">
         <title>SCORE Sensors Visualisation</title>
-        <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.2/dist/leaflet.css"
-        integrity="sha256-sA+zWATbFveLLNqWO2gtiw3HL/lh1giY/Inf1BJ0z14="
-        crossorigin=""/> -->
         <link rel="stylesheet" href="/dist/style.css">
+        <script src="https://cdn.plot.ly/plotly-2.24.1.min.js" charset="utf-8"></script>
+
     </head>
     
 
@@ -37,7 +36,7 @@
                    
                     <button id="close-button" class="absolute top-0 right-0 m-1 px-2 py-1 border bg-gray-200 text-gray-800 font-medium border-gray-300 rounded hover:bg-gray-300">X</button>
                     
-                    <div id="datastreams-selection-page" class="hidden flex-col items-center p-4"></div>
+                    <div id="datastreams-selection-page" class="hidden flex-col items-center p-4"></div>  
                     
                     <div id="datastream-results-page" class="hidden flex-col items-start text-left p-4"></div>
                     <!-- <div id="datastream-page" class="flex flex-col items-start p-20"></div> -->
@@ -48,7 +47,7 @@
         </div>
         
             
-
+        <div class="w-5/6 h-96 absolute max-h-10"></div>
     
     
 
