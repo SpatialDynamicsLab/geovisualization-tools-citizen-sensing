@@ -207,9 +207,9 @@ class DataPanel {
         this.datastreamResultsPageTitle.innerText = datastream.name
 
         const htmlContent = `
-            <p>Sensor: ${datastream.Sensor.name}</p>
-            <p>Observed property: ${datastream.ObservedProperty.name}</p>
-            <p>Unit: ${datastream.unitOfMeasurement.name}</p>
+            <p><span class="font-semibold">Sensor:</span> ${datastream.Sensor.name}</p>
+            <p><span class="font-semibold">Observed property:</span> ${datastream.ObservedProperty.name}</p>
+            <p><span class="font-semibold">Unit:</span> ${datastream.unitOfMeasurement.name}</p>
         `;
 
         this.datastreamInfoDiv.insertAdjacentHTML('afterbegin',htmlContent)

@@ -11,18 +11,22 @@
 
     <body class="bg-purple-900 text-center">
         
-        <form id="query-form" class="flex">
+        <form id="query-form" class="flex flex-wrap w-screen ">
 
-            <p class="my-auto mx-4">Observed Property</p>
-            <select id="property-select" class="m-4 px-4 min-w-[250px] rounded">
-              <option value="-1">(All)</option>
-            </select>
-        
-            <p class="my-auto mx-4">CCLL</p>
-            <select id="ccll-select" class="m-4 px-4 min-w-[150px] rounded">
-              <option value="-1">(All)</option>
-            </select>
-        
+            <div class="flex basis-96">
+                <p class="my-auto ml-4 mr-3 flex-shrink-0">Observed Property</p>
+                <select id="property-select" class="my-4 px-4 basis-56 rounded">
+                  <option value="-1">(All)</option>
+                </select>
+            </div>
+            
+            <div class="flex basis-52">
+                <p class="my-auto ml-4 mr-3">CCLL</p>
+                <select id="ccll-select" class="my-4 px-4 basis-36 rounded">
+                   <option value="-1">(All)</option>
+                </select>
+            </div>
+            
             <button class="m-4 py-2 px-4 bg-gray-200 font-medium rounded hover:bg-gray-300">Query</button>
 
         </form>
@@ -34,7 +38,7 @@
         
             
             <div id="data-panel"
-                class="absolute hidden z-30 top-0 right-0 flex-col basis-full flex-grow flex-shrink-0 items-center h-full w-5/12 min-w-[300px] overflow-x-hidden overflow-y-scroll bg-white bg-opacity-90 shadow-inner border border-gray-300">
+                class="absolute hidden z-30 top-0 right-0 flex-col basis-full items-center h-full w-5/12 min-w-[300px] overflow-x-hidden overflow-y-scroll bg-white bg-opacity-90 shadow-inner border border-gray-300">
                    
                     <div class="absolute top-0 right-0 flex-row-reverse">
                         <button id="back-button" class="m-1 px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">Back</button>
@@ -84,7 +88,7 @@
     
         </div>
         
-        
+
     
     
 
