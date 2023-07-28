@@ -1,7 +1,7 @@
 @import url('https://unpkg.com/leaflet@1.9.2/dist/leaflet.css');
 
 /*
-! tailwindcss v3.3.2 | MIT License | https://tailwindcss.com
+! tailwindcss v3.3.3 | MIT License | https://tailwindcss.com
 */
 
 /*
@@ -193,6 +193,10 @@ select,
 textarea {
   font-family: inherit;
   /* 1 */
+  font-feature-settings: inherit;
+  /* 1 */
+  font-variation-settings: inherit;
+  /* 1 */
   font-size: 100%;
   /* 1 */
   font-weight: inherit;
@@ -340,6 +344,14 @@ ul,
 menu {
   list-style: none;
   margin: 0;
+  padding: 0;
+}
+
+/*
+Reset default styling for dialogs.
+*/
+
+dialog {
   padding: 0;
 }
 
@@ -594,14 +606,14 @@ video {
   margin-right: 1rem;
 }
 
-.my-auto{
-  margin-top: auto;
-  margin-bottom: auto;
-}
-
 .my-4{
   margin-top: 1rem;
   margin-bottom: 1rem;
+}
+
+.my-auto{
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .ml-4{
@@ -660,64 +672,60 @@ video {
   width: 100vw;
 }
 
-.min-w-\[150px\]{
-  min-width: 150px;
-}
-
-.min-w-\[250px\]{
-  min-width: 250px;
-}
-
-.min-w-\[300px\]{
-  min-width: 300px;
+.w-full{
+  width: 100%;
 }
 
 .min-w-\[50px\]{
   min-width: 50px;
 }
 
-.flex-auto{
-  flex: 1 1 auto;
+.min-w-full{
+  min-width: 100%;
 }
 
-.flex-shrink{
-  flex-shrink: 1;
+.max-w-\[500px\]{
+  max-width: 500px;
+}
+
+.max-w-\[200px\]{
+  max-width: 200px;
+}
+
+.max-w-\[700px\]{
+  max-width: 700px;
+}
+
+.max-w-\[800px\]{
+  max-width: 800px;
+}
+
+.max-w-\[1200px\]{
+  max-width: 1200px;
 }
 
 .flex-shrink-0{
   flex-shrink: 0;
 }
 
-.flex-grow{
-  flex-grow: 1;
-}
-
-.basis-full{
-  flex-basis: 100%;
-}
-
-.basis-64{
-  flex-basis: 16rem;
-}
-
-.basis-96{
-  flex-basis: 24rem;
-}
-
-.basis-60{
-  flex-basis: 15rem;
-}
-
 .basis-36{
   flex-basis: 9rem;
+}
+
+.basis-52{
+  flex-basis: 13rem;
 }
 
 .basis-56{
   flex-basis: 14rem;
 }
 
-.basis-52{
-  flex-basis: 13rem;
+.basis-96{
+  flex-basis: 24rem;
+}
+
+.basis-full{
+  flex-basis: 100%;
 }
 
 .-translate-x-1\/2{
@@ -860,10 +868,6 @@ video {
   font-weight: 600;
 }
 
-.font-normal{
-  font-weight: 400;
-}
-
 .text-gray-800{
   --tw-text-opacity: 1;
   color: rgb(31 41 55 / var(--tw-text-opacity));
@@ -882,42 +886,4 @@ video {
 .hover\:bg-gray-300:hover{
   --tw-bg-opacity: 1;
   background-color: rgb(209 213 219 / var(--tw-bg-opacity));
-}
-
-.active\:bg-gray-400:active{
-  --tw-bg-opacity: 1;
-  background-color: rgb(156 163 175 / var(--tw-bg-opacity));
-}
-
-.active\:shadow-sm:active{
-  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-}
-
-.active\:shadow-lg:active{
-  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-}
-
-.active\:shadow-inner:active{
-  --tw-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
-  --tw-shadow-colored: inset 0 2px 4px 0 var(--tw-shadow-color);
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-}
-
-.active\:shadow-cyan-950:active{
-  --tw-shadow-color: #083344;
-  --tw-shadow: var(--tw-shadow-colored);
-}
-
-.active\:shadow-gray-600:active{
-  --tw-shadow-color: #4b5563;
-  --tw-shadow: var(--tw-shadow-colored);
-}
-
-.active\:drop-shadow-md:active{
-  --tw-drop-shadow: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06));
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }

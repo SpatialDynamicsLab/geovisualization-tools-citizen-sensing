@@ -139,8 +139,8 @@ class DataPanel {
 
     constructor(panelId) {
         this.panelDiv = document.getElementById(panelId);
-        this.closeButton = document.getElementById("data-panel-close-button")
-        this.backButton = document.getElementById("back-button")
+        this.closeButton = document.getElementById("data-panel-close-button");
+        this.backButton = document.getElementById("back-button");
 
         this.datastreamsSelectionPage = document.getElementById("datastreams-selection-page")
         this.datastreamsButtonsDiv = document.getElementById("datastreams-buttons")
@@ -152,12 +152,12 @@ class DataPanel {
         this.plotDiv = document.getElementById("data-panel-plot")
 
         this.expandButton = document.getElementById("expand-button")
-        this.expandedPlotPanel = new ExpandedPlotPanel("expanded-plot-panel")
+        this.expandedPlotPanel = new ExpandedPlotPanel("expanded-plot-panel");
         
-        this.selectedDatastream = {"@iot.id":null}
-        this.loadedObservations = null
+        this.selectedDatastream = {"@iot.id":null};
+        this.loadedObservations = null;
 
-        this.setEventListeners()
+        this.setEventListeners();
     }
 
     setEventListeners() {
