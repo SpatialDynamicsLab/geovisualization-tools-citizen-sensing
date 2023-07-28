@@ -9,9 +9,8 @@ class App {
 
     constructor() {
         
-        this.queryForm = new QueryForm("query-form");
         this.apiEndpoint = "https://score.sta.tero.gr/v1.0";
-        // this.apiEndpoint = "https://toronto-bike-snapshot.sensorup.com/v1.0"
+        this.queryForm = new QueryForm("query-form","property-select","ccll-select");
         this.mapManager = new MapManager([[54.209196,13.671665],[38.543655,-8.509294]])
         
 
@@ -53,7 +52,7 @@ class MapManager {
         this.map = null;
         this.defaultBounds = defaultBounds
         this.markerGroup = null;
-        this.dataPanel = new DataPanel("data-panel","close-button")
+        this.dataPanel = new DataPanel("data-panel")
     }
 
     initMap() {
@@ -129,19 +128,274 @@ class MapManager {
         return marker
     }
 
-
+    getDataPanel() {
+        return this.dataPanel
+    }
     
 
 }
 
+class DataPanel {
+
+    constructor(panelId) {
+        this.panelDiv = document.getElementById(panelId);
+        this.closeButton = document.getElementById("data-panel-close-button")
+        this.backButton = document.getElementById("back-button")
+
+        this.datastreamsSelectionPage = document.getElementById("datastreams-selection-page")
+        this.datastreamsButtonsDiv = document.getElementById("datastreams-buttons")
+        
+        this.datastreamResultsPage = document.getElementById("datastream-results-page")
+        this.datastreamResultsPageTitle = document.getElementById("results-page-title")
+        this.datastreamInfoDiv = document.getElementById("datastream-info")
+        this.dataOptionsForm = new DataOptionsForm("data-options-form","number-observations-select",this.makePlot.bind(this))
+        this.plotDiv = document.getElementById("data-panel-plot")
+
+        this.expandButton = document.getElementById("expand-button")
+        this.expandedPlotPanel = new ExpandedPlotPanel("expanded-plot-panel")
+        
+        this.selectedDatastream = {"@iot.id":null}
+        this.loadedObservations = null
+
+        this.setEventListeners()
+    }
+
+    setEventListeners() {
+        this.closeButton.addEventListener('click', e => this.close());
+        this.backButton.addEventListener('click', e => this.goToDatastreamsSelectionPage());
+        this.expandButton.addEventListener('click', e => this.expandPlot());
+    }
+
+    initDatastreamSelectionPage(thing) {
+
+        this.clearElementContent(this.datastreamsButtonsDiv)
+
+        thing.Datastreams.forEach( (datastream) => {
+
+            const datastreamButton = document.createElement('button')
+            datastreamButton.innerText = datastream.name
+            datastreamButton.classList.add("m-4","py-2","px-4","bg-gray-200","text-gray-800","font-medium","rounded","hover:bg-gray-300")
+           
+            datastreamButton.addEventListener('click', async e => {
+
+                this.goToDatastreamResultsPage();
+                
+                if (datastream["@iot.id"] != this.selectedDatastream["@iot.id"]) {  
+                    this.selectedDatastream = datastream
+                    await this.initDatastreamResultsPage(this.selectedDatastream);
+                }
+
+                
+                
+            });
+
+            
+            this.datastreamsButtonsDiv.appendChild(datastreamButton)
+        })
+
+
+    }
+
+    async initDatastreamResultsPage(datastream) {
+
+        this.clearElementContent(this.datastreamInfoDiv)
+        this.plotVoid(this.plotDiv,datastream.ObservedProperty.name,datastream.unitOfMeasurement.symbol)
+
+
+        this.dataOptionsForm.setDatastream(datastream)
+
+        this.datastreamResultsPageTitle.innerText = datastream.name
+
+        const htmlContent = `
+            <p>Sensor: ${datastream.Sensor.name}</p>
+            <p>Observed property: ${datastream.ObservedProperty.name}</p>
+            <p>Unit: ${datastream.unitOfMeasurement.name}</p>
+        `;
+
+        this.datastreamInfoDiv.insertAdjacentHTML('afterbegin',htmlContent)
+        
+        this.dataOptionsForm.getNumOfObsFilter().setSelectedIndex(0)
+        await this.makePlot(datastream,this.dataOptionsForm.getNumOfObsFilter().getSelectedValue())
+
+        
+
+               
+    }
+
+
+    async makePlot(datastream,numberOfObs) {
+        const api = SensorThingsAPI.getInstance(App.getInstance().apiEndpoint);
+        this.loadedObservations = await api.getLastObservations(datastream["@iot.id"], numberOfObs);
+
+        
+        this.plotObservations(this.plotDiv,this.loadedObservations,datastream.ObservedProperty.name,datastream.unitOfMeasurement.symbol);
+      
+    }
+
+    plotObservations(plotDiv,observations,parameter="",unit="",fontSize=11) {
+
+        const [timeList, valueList] = observations.reduce(
+            (lists, observation) => {
+              lists[0].push(observation.phenomenonTime);
+              lists[1].push(observation.result);
+              return lists;
+            },
+            [[], []]
+        );
+
+        const data = [{
+            x: timeList,
+            y: valueList }]
+        
+        const layout = {
+            margin: { t: 0 },
+            xaxis: {
+                tickfont: {
+                  size: fontSize
+                },
+              },
+            yaxis: {
+                tickfont: {
+                    size: fontSize
+                  },
+                title: {
+                    text: `${parameter} (${unit})`,
+                    font: {size: fontSize} 
+                }
+                
+            }
+            
+
+        }
+
+        Plotly.newPlot(plotDiv,data,layout)
+
+
+    }
+
+    plotVoid(plotDiv,parameter="",unit="") {
+        const data = [{
+            x: [],
+            y: [] }]
+        
+        const layout = {
+            margin: { t: 0 },
+            yaxis: {
+                title: `${parameter} (${unit})`
+            }
+
+        }
+
+        Plotly.newPlot(plotDiv,data,layout)
+    }
+
+
+    expandPlot() {
+
+        const parameter = this.selectedDatastream.ObservedProperty.name
+        const unit = this.selectedDatastream.unitOfMeasurement.symbol
+
+        this.expandedPlotPanel.open();
+        this.plotObservations(this.expandedPlotPanel.getPlotDiv(),this.loadedObservations,parameter,unit,14);
+
+    }
+
+
+    // Opening/Closing/Clearing elements methods
+
+    open() {
+        this.goToDatastreamsSelectionPage()
+        this.showElement(this.panelDiv)
+    }
+
+    close() {
+        this.hideElement(this.panelDiv)
+        this.hideElement(this.datastreamsSelectionPage)
+        this.hideElement(this.datastreamResultsPage)
+    }
+
+    goToDatastreamsSelectionPage() {
+        this.hideElement(this.datastreamResultsPage)
+        this.showElement(this.datastreamsSelectionPage)
+        this.hideElement(this.backButton)
+    }
+
+    goToDatastreamResultsPage() {
+        this.hideElement(this.datastreamsSelectionPage)
+        this.showElement(this.datastreamResultsPage)
+        this.showElement(this.backButton)
+    }
+
+    showElement(element) {
+        let classList = element.classList
+
+        if (classList.contains("hidden")) {
+            classList.remove("hidden");
+        }
+    }
+
+    hideElement(element) {
+        let classList = element.classList
+       
+        if (!classList.contains("hidden")) {
+            classList.add("hidden");
+        }
+    }
+    
+
+    clearElementContent(element) {
+        while (element.firstChild) {
+            element.removeChild(element.firstChild);
+        }
+    }  
+
+}
+
+class ExpandedPlotPanel {
+    constructor(panelId) {
+        this.panelDiv = document.getElementById(panelId);
+        this.closeButton = document.getElementById("expanded-plot-panel-close-button")
+        this.plotDiv = document.getElementById("expanded-plot-panel-plot")
+        
+        this.invisibleOverlay = document.createElement('div')
+        this.invisibleOverlay.classList.add("absolute","z-40","top-0","left-0","h-screen","w-screen")
+
+        this.setEventListeners()
+    }
+
+    setEventListeners() {
+        this.closeButton.addEventListener('click', e => this.close());
+    }
+
+    getPlotDiv() {
+        return this.plotDiv
+    }
+
+    open() {
+        document.body.appendChild(this.invisibleOverlay)
+
+        if (this.panelDiv.classList.contains("hidden")) {
+            this.panelDiv.classList.remove("hidden");
+        }
+    }
+    
+    close() {
+        document.body.removeChild(this.invisibleOverlay)
+
+        if (!this.panelDiv.classList.contains("hidden")) {
+            this.panelDiv.classList.add("hidden");
+        }
+    }
+}
+
 class QueryForm {
 
-    constructor(formId) {
+    constructor(formId,propertySelectId,ccllSelectId) {
     
         this.form = document.getElementById(formId);
 
-        this.propertyFilter = new Filter("property-select");
-        this.ccllFilter = new Filter("ccll-select");
+        this.propertyFilter = new Filter(propertySelectId);
+        this.ccllFilter = new Filter(ccllSelectId);
 
         this.setEventListeners();
         
@@ -172,23 +426,58 @@ class QueryForm {
 
 
 
-        // const dataValue = await api.getFilteredDatastreams(selectedProperty,selectedCcll);
         const dataValue = await api.getFilteredThings(selectedProperty,selectedCcll);
 
-        console.log(dataValue)
-
         App.getInstance().getMapManager().displayMarkers(dataValue)
+        App.getInstance().getMapManager().getDataPanel().close()
         
     }
 
 
 }
 
+class DataOptionsForm {
+    constructor(formId,numOfObsSelectId,makePlotCallback) {
+    
+        this.form = document.getElementById(formId);
+        this.numOfObsFilter = new Filter(numOfObsSelectId);
+        this.makePlotCallback = makePlotCallback;
+        this.datastream = null
+
+        this.numOfObsFilter.addOption('50','50')
+        this.numOfObsFilter.addOption('100','100')
+        this.numOfObsFilter.addOption('1000','1000')
+
+        this.setEventListeners();
+        
+    }
+
+    setEventListeners() {
+        // this.form.addEventListener('submit', async e => await this.handleSubmit(e));
+        this.numOfObsFilter.getSelect().addEventListener('change',async e => await this.handleChange(e))
+    }
+
+    setDatastream(datastream) {
+        this.datastream = datastream;
+    }
+    
+    getNumOfObsFilter() {
+        return this.numOfObsFilter;
+    }
+
+    async handleChange(event) {
+
+        event.preventDefault();
+        const selectedNumber = this.numOfObsFilter.getSelectedValue();
+        await this.makePlotCallback(this.datastream,selectedNumber);
+        
+    }
+}
+
 class Filter {
 
     constructor(selectId) {
         this.select = document.getElementById(selectId);
-        // console.log(this.getSelectedValue())
     }
 
     getSelect() {
@@ -197,6 +486,10 @@ class Filter {
 
     getSelectedValue() {
         return this.select.value;
+    }
+
+    setSelectedIndex(index) {
+        this.select.selectedIndex = index
     }
 
     addOption(value,innerText) {
@@ -210,115 +503,7 @@ class Filter {
 
 }
 
-class DataPanel {
 
-    constructor(panelId,closeButtonId) {
-        this.panelDiv = document.getElementById(panelId);
-        this.closeButton = document.getElementById(closeButtonId)
-        this.datastreamsSelectionPage = document.getElementById("datastreams-selection-page")
-        this.datastreamResultsPage = document.getElementById("datastream-results-page")
-
-        this.setEventListeners()
-    }
-
-
-    initDatastreamSelectionPage(thing) {
-
-        this.clearElementContent(this.datastreamsSelectionPage)
-
-        const htmlContent = '<h2 class="py-4 text-center text-xl font-semibold">Datastreams</h2>'
-
-        this.datastreamsSelectionPage.insertAdjacentHTML('afterbegin',htmlContent)
-
-        thing.Datastreams.forEach( (datastream) => {
-
-            const datastreamButton = document.createElement('button')
-            datastreamButton.innerText = datastream.name
-            datastreamButton.classList.add("m-4","py-2","px-4","border","bg-gray-200","text-gray-800","font-medium","border-gray-300","rounded","hover:bg-gray-300")
-           
-            datastreamButton.addEventListener('click', e => {
-                this.hideElement(this.datastreamsSelectionPage);  
-                this.initDatastreamResultsPage.bind(this)(datastream);
-                this.showElement(this.datastreamResultsPage)
-            });
-
-            
-            this.datastreamsSelectionPage.appendChild(datastreamButton)
-        })
-
-
-    }
-
-    initDatastreamResultsPage(datastream) {
-
-        this.clearElementContent(this.datastreamResultsPage)
-
-        const htmlContent = `
-                            <h2 class="py-4 text-center text-xl font-semibold">${datastream.name}</h2>
-                            <p>Sensor: ${datastream.Sensor.name}</p>
-                            <p>Observed property: ${datastream.ObservedProperty.name}</p>
-                            <p>Unit: ${datastream.unitOfMeasurement.symbol}</p>
-                            `
-
-        this.datastreamResultsPage.insertAdjacentHTML('afterbegin',htmlContent)
-        
-
-        const api =  SensorThingsAPI.getInstance(App.getInstance().apiEndpoint)
-        api.logObservations(datastream["@iot.id"])
-    }
-
-
-    setEventListeners() {
-        this.closeButton.addEventListener('click', this.close.bind(this));
-
-    }
-
-
-    open() {
-
-        this.showElement(this.panelDiv)
-        this.showElement(this.datastreamsSelectionPage)
-        this.hideElement(this.datastreamResultsPage)
-
-        
-    }
-
-    close(event) {
-
-        this.hideElement(this.panelDiv)
-        this.hideElement(this.datastreamsSelectionPage)
-        this.hideElement(this.datastreamResultsPage)
-        
-    }
-
-   
-
-    showElement(element) {
-        let classList = element.classList
-       
-        if (classList.contains("hidden")) {
-            classList.remove("hidden");
-            classList.add("flex");
-        }
-    }
-
-    hideElement(element) {
-        let classList = element.classList
-       
-        if (classList.contains("flex")) {
-            classList.remove("flex");
-            classList.add("hidden");
-        }
-    }
-    
-
-    clearElementContent(element) {
-        while (element.firstChild) {
-            element.removeChild(element.firstChild);
-        }
-    }  
-
-}
 
 
 
@@ -330,8 +515,6 @@ class SensorThingsAPI {
     constructor(apiEndpoint) {
          this.apiEndpoint = apiEndpoint;
     }
-
-  
 
     static getInstance(apiEndpoint) {
         if (!SensorThingsAPI.instance) {
@@ -347,7 +530,7 @@ class SensorThingsAPI {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-        console.log(data)
+        // console.log(data)
         return data;
       } catch (error) {
         console.error('Error:', error);
@@ -355,34 +538,20 @@ class SensorThingsAPI {
       }
     }
   
-    // async getDatastreams() {
-    
-    //     const queryURL = `${this.apiEndpoint}/Datastreams`;
-    //     const data = await this.fetchData(queryURL);
-    //     return data.value;
-    // }
-  
-    //(only the 100 first observations for now)
-    async getObservations(datastreamID) {
 
-        const queryURL = `${this.apiEndpoint}/Datastreams(${datastreamID})/Observations`;
+    async getLastObservations(datastreamID,numberOfObs) {
+
+        const queryURL = `${this.apiEndpoint}/Datastreams(${datastreamID})/Observations?$orderby=phenomenonTime desc&$select=phenomenonTime,result,id&$top=${numberOfObs}`;
         const data = await this.fetchData(queryURL);
         console.log(queryURL)
         return data.value;
     }
 
-    async logObservations(datastreamID) {
-
-        const observations = await this.getObservations(datastreamID)
-        
-        console.log(observations)
-        console.log(observations[0].phenomenonTime)
-    }
 
     async addObservedPropertyOptions(filter) {
 
         const queryURL = `${this.apiEndpoint}/ObservedProperties?$orderby=id&$select=id,name`;
-        console.log(queryURL)
+        // console.log(queryURL)
         const data = await this.fetchData(queryURL);
 
         data.value.forEach( (property) => {
@@ -398,7 +567,7 @@ class SensorThingsAPI {
     async addCCLLOptions(filter) {
 
         const queryURL = `${this.apiEndpoint}/Things?$select=properties/CCLL&$orderby=properties/CCLL`;
-        console.log(queryURL)
+        // console.log(queryURL)
         const data = await this.fetchData(queryURL);
 
 
@@ -420,40 +589,6 @@ class SensorThingsAPI {
         })
     }
 
-    async getFilteredDatastreams(propID,ccllValue) {
-
-        
-        let queryURL = this.apiEndpoint;
-
-        queryURL = `${queryURL}/Datastreams?$expand=Sensor,ObservedProperty,Thing/Locations&$orderby=id`;
-
-
-        if (propID != "-1") {
-            queryURL = `${queryURL}&$filter=ObservedProperty/id eq ${propID}`
-            
-            if (ccllValue != "-1") {
-
-                queryURL = `${queryURL} and Thing/properties/CCLL eq '${ccllValue}'`
-            }
-
-        } else {
-            
-            if (ccllValue != "-1") {
-
-                queryURL = `${queryURL}&$filter=Thing/properties/CCLL eq '${ccllValue}'`
-            }
-        }
-        
-
-
-
-        console.log(queryURL)
-       
-
-        const data = await this.fetchData(queryURL);
-        
-        return data.value
-    }
 
     async getFilteredThings(propID,ccllValue) {
 
