@@ -50,7 +50,7 @@ class MapManager {
     constructor(defaultBounds) {
 
         this.map = null;
-        this.defaultBounds = defaultBounds
+        this.defaultBounds = defaultBounds;
         this.markerGroup = null;
         this.dataPanel = new DataPanel("data-panel")
     }
@@ -68,17 +68,18 @@ class MapManager {
 
     }
 
+    getDataPanel() {
+        return this.dataPanel
+    }
+
     displayMarkers(dataValue) {
 
         this.markerGroup.clearLayers();
 
         dataValue.forEach( (object) => {
             
-            // const marker = this.createDatastreamMarker(object)
             const marker = this.createThingMarker(object)
             this.markerGroup.addLayer(marker)
-
-
 
         })
 
@@ -89,6 +90,7 @@ class MapManager {
     }
 
     adjustBounds() {
+
         let bounds = null;
 
         if (this.markerGroup.getLayers().length == 0) {
@@ -106,9 +108,6 @@ class MapManager {
 
         const [lng,lat] = thing.Locations[0].location.coordinates;
 
-
-        // let popup = L.popup();
-        
         let sensorsListString = "";
         thing.Datastreams.forEach( (datastream,index) => {
             if (index == 0) {
@@ -118,8 +117,8 @@ class MapManager {
             } 
         })
 
-        const popupContent = document.createElement('div')
-        popupContent.classList.add("flex","flex-col")
+        const popupContent = document.createElement('div');
+        popupContent.classList.add("flex","flex-col");
 
         let htmlContent =  `<div>
                 <h1 class="text-[16px] font-semibold"><span class="font-bold">Thing:</span> ${thing.name}</h1>
@@ -127,23 +126,24 @@ class MapManager {
                 <p><span class="font-semibold">CCLL:</span> ${thing.properties.CCLL}</p>
                 <p><span class="font-semibold">Lng, Lat:</span> ${lng}, ${lat}</p>
             </div>
-        `
-        popupContent.insertAdjacentHTML('afterbegin',htmlContent)
+        `;
 
-        const openDataPanelButton = document.createElement('button')
-        openDataPanelButton.innerText ="View Datastreams"
-        openDataPanelButton.classList.add("py-2","px-4","bg-gray-200","text-gray-800","font-medium","rounded","hover:bg-gray-300")
+        popupContent.insertAdjacentHTML('afterbegin',htmlContent);
+
+        const openDataPanelButton = document.createElement('button');
+        openDataPanelButton.innerText = "View Datastreams";
+        openDataPanelButton.classList.add("py-2","px-4","bg-gray-200","text-gray-800","font-medium","rounded","hover:bg-gray-300");
 
         openDataPanelButton.addEventListener('click',e => {
-            this.dataPanel.open()});
+            this.dataPanel.open()
+        });
         
         popupContent.addEventListener('click',e => {
             this.dataPanel.open()
-            console.log("e")
-        })
+        });
 
             
-        popupContent.appendChild(openDataPanelButton)
+        popupContent.appendChild(openDataPanelButton);
 
 
         const marker = L.marker([lat,lng])
@@ -155,15 +155,13 @@ class MapManager {
             this.dataPanel.initDatastreamSelectionPage(thing);
             this.dataPanel.goToDatastreamsSelectionPage();
 
-        })
+        });
 
 
         return marker
     }
 
-    getDataPanel() {
-        return this.dataPanel
-    }
+    
     
 
 }
@@ -171,21 +169,22 @@ class MapManager {
 class DataPanel {
 
     constructor(panelId) {
+
         this.panelDiv = document.getElementById(panelId);
         this.closeButton = document.getElementById("data-panel-close-button");
         this.backButton = document.getElementById("back-button");
 
-        this.datastreamsSelectionPage = document.getElementById("datastreams-selection-page")
-        this.datastreamsSelectionPageSubtitle = document.getElementById("datastreams-selection-page-subtitle")
-        this.datastreamsButtonsDiv = document.getElementById("datastreams-buttons")
+        this.datastreamsSelectionPage = document.getElementById("datastreams-selection-page");
+        this.datastreamsSelectionPageSubtitle = document.getElementById("datastreams-selection-page-subtitle");
+        this.datastreamsButtonsDiv = document.getElementById("datastreams-buttons");
         
-        this.datastreamResultsPage = document.getElementById("datastream-results-page")
-        this.datastreamResultsPageTitle = document.getElementById("results-page-title")
-        this.datastreamInfoDiv = document.getElementById("datastream-info")
-        this.dataOptionsForm = new DataOptionsForm("data-options-form","number-observations-select",this.makePlot.bind(this))
-        this.plotDiv = document.getElementById("data-panel-plot")
+        this.datastreamResultsPage = document.getElementById("datastream-results-page");
+        this.datastreamResultsPageTitle = document.getElementById("results-page-title");
+        this.datastreamInfoDiv = document.getElementById("datastream-info");
+        this.dataOptionsForm = new DataOptionsForm("data-options-form","number-observations-select",this.makePlot.bind(this));
+        this.plotDiv = document.getElementById("data-panel-plot");
 
-        this.expandButton = document.getElementById("expand-button")
+        this.expandButton = document.getElementById("expand-button");
         this.expandedPlotPanel = new ExpandedPlotPanel("expanded-plot-panel");
         
         this.selectedDatastream = {"@iot.id":null};
@@ -202,16 +201,15 @@ class DataPanel {
 
     initDatastreamSelectionPage(thing) {
 
-        this.clearElementContent(this.datastreamsButtonsDiv)
+        this.clearElementContent(this.datastreamsButtonsDiv);
 
-        this.datastreamsSelectionPageSubtitle.innerText = `(${thing.name})`
+        this.datastreamsSelectionPageSubtitle.innerText = `(${thing.name})`;
 
         thing.Datastreams.forEach( (datastream) => {
 
-            const datastreamButton = document.createElement('button')
-            datastreamButton.innerText = `${datastream.name} (${datastream.Sensor.name})`
-            // datastreamButton.innerText = datastream.name
-            datastreamButton.classList.add("m-4","py-2","px-4","bg-gray-200","text-gray-800","font-medium","rounded","hover:bg-gray-300","w-full")
+            const datastreamButton = document.createElement('button');
+            datastreamButton.innerText = `${datastream.name} (${datastream.Sensor.name})`;
+            datastreamButton.classList.add("m-4","py-2","px-4","bg-gray-200","text-gray-800","font-medium","rounded","hover:bg-gray-300","w-full");
            
             datastreamButton.addEventListener('click', async e => {
 
@@ -221,13 +219,10 @@ class DataPanel {
                     this.selectedDatastream = datastream
                     await this.initDatastreamResultsPage(this.selectedDatastream);
                 }
-
-                
-                
+  
             });
 
-            
-            this.datastreamsButtonsDiv.appendChild(datastreamButton)
+            this.datastreamsButtonsDiv.appendChild(datastreamButton);
         })
 
 
@@ -235,13 +230,13 @@ class DataPanel {
 
     async initDatastreamResultsPage(datastream) {
 
-        this.clearElementContent(this.datastreamInfoDiv)
-        this.plotVoid(this.plotDiv,datastream.ObservedProperty.name,datastream.unitOfMeasurement.symbol)
+        this.clearElementContent(this.datastreamInfoDiv);
+        this.plotVoid(this.plotDiv,datastream.ObservedProperty.name,datastream.unitOfMeasurement.symbol);
 
 
-        this.dataOptionsForm.setDatastream(datastream)
+        this.dataOptionsForm.setDatastream(datastream);
 
-        this.datastreamResultsPageTitle.innerText = datastream.name
+        this.datastreamResultsPageTitle.innerText = datastream.name;
 
         const htmlContent = `
             <p><span class="font-semibold">Sensor:</span> ${datastream.Sensor.name}</p>
@@ -249,10 +244,10 @@ class DataPanel {
             <p><span class="font-semibold">Unit:</span> ${datastream.unitOfMeasurement.name}</p>
         `;
 
-        this.datastreamInfoDiv.insertAdjacentHTML('afterbegin',htmlContent)
+        this.datastreamInfoDiv.insertAdjacentHTML('afterbegin',htmlContent);
         
-        this.dataOptionsForm.getNumOfObsFilter().setSelectedIndex(0)
-        await this.makePlot(datastream,this.dataOptionsForm.getNumOfObsFilter().getSelectedValue())
+        this.dataOptionsForm.getNumOfObsFilter().setSelectedIndex(0);
+        await this.makePlot(datastream,this.dataOptionsForm.getNumOfObsFilter().getSelectedValue());
 
         
 
@@ -282,12 +277,12 @@ class DataPanel {
 
         const data = [{
             x: timeList,
-            y: valueList }]
+            y: valueList 
+        }];
         
 
         const yaxisTitle = `${parameter} (${unit})`;    
         const adjustedYaxisTitleFontSize = this.adjustFontSize(yaxisTitle,18,plotDiv.offsetHeight,0.7);
-        // console.log(adjustedYaxisTitleFontSize)
 
         let layout = {
 
@@ -321,11 +316,12 @@ class DataPanel {
             }
             
 
-        }
+        };
+
 
         if (title!="") {
 
-            const adjustedTitleFontSize = this.adjustFontSize(title,20,plotDiv.offsetWidth,0.7)
+            const adjustedTitleFontSize = this.adjustFontSize(title,20,plotDiv.offsetWidth,0.7);
 
             layout.title = {
                 text: title,
@@ -333,10 +329,10 @@ class DataPanel {
                     size: adjustedTitleFontSize
                 },
                 automargin: true
-            }
+            };
         }
 
-        Plotly.newPlot(plotDiv,data,layout)
+        Plotly.newPlot(plotDiv,data,layout);
 
 
     }
@@ -344,7 +340,8 @@ class DataPanel {
     plotVoid(plotDiv,parameter="",unit="") {
         const data = [{
             x: [],
-            y: [] }]
+            y: [] 
+        }];
             
         const yaxisTitle = `${parameter} (${unit})`;    
         const adjustedYaxisTitleFontSize = this.adjustFontSize(yaxisTitle,18,plotDiv.offsetHeight,0.7);
@@ -369,24 +366,21 @@ class DataPanel {
 
         }
 
-        Plotly.newPlot(plotDiv,data,layout)
+        Plotly.newPlot(plotDiv,data,layout);
     }
 
     adjustFontSize(title, fontSize, divWidth, fontWidthHeightFactor) {
 
-        const wDiv = divWidth
+        const wDiv = divWidth;
         const nC = title.length // Number of characters
-        const fsDefault = fontSize
+        const fsDefault = fontSize;
         const k = fontWidthHeightFactor // Factor associated to a font such as width=k*fontSize for a character
-        // console.log("wDiv",wDiv,"nC",nC,"fsDefault",fsDefault,"k",k)
     
         const fsMax = Math.floor((1/k)*wDiv/nC)
-        // console.log("fsMax",fsMax)
-    
         const newFontSize = Math.min(fsDefault,fsMax)
-        // console.log("newFontSize",newFontSize)
+        
         return newFontSize;
-      } 
+    } 
 
     expandPlot() {
 
@@ -406,31 +400,30 @@ class DataPanel {
     // Opening/Closing/Clearing elements methods
 
     open() {
-        this.goToDatastreamsSelectionPage()
-        this.showElement(this.panelDiv)
-        console.log()
+        this.goToDatastreamsSelectionPage();
+        this.showElement(this.panelDiv);
     }
 
     close() {
-        this.hideElement(this.panelDiv)
-        this.hideElement(this.datastreamsSelectionPage)
-        this.hideElement(this.datastreamResultsPage)
+        this.hideElement(this.panelDiv);
+        this.hideElement(this.datastreamsSelectionPage);
+        this.hideElement(this.datastreamResultsPage);
     }
 
     goToDatastreamsSelectionPage() {
-        this.hideElement(this.datastreamResultsPage)
-        this.showElement(this.datastreamsSelectionPage)
-        this.hideElement(this.backButton)
+        this.hideElement(this.datastreamResultsPage);
+        this.showElement(this.datastreamsSelectionPage);
+        this.hideElement(this.backButton);
     }
 
     goToDatastreamResultsPage() {
-        this.hideElement(this.datastreamsSelectionPage)
-        this.showElement(this.datastreamResultsPage)
-        this.showElement(this.backButton)
+        this.hideElement(this.datastreamsSelectionPage);
+        this.showElement(this.datastreamResultsPage);
+        this.showElement(this.backButton);
     }
 
     showElement(element) {
-        let classList = element.classList
+        let classList = element.classList;
 
         if (classList.contains("hidden")) {
             classList.remove("hidden");
@@ -438,7 +431,7 @@ class DataPanel {
     }
 
     hideElement(element) {
-        let classList = element.classList
+        let classList = element.classList;
        
         if (!classList.contains("hidden")) {
             classList.add("hidden");
@@ -455,15 +448,17 @@ class DataPanel {
 }
 
 class ExpandedPlotPanel {
+    
     constructor(panelId) {
-        this.panelDiv = document.getElementById(panelId);
-        this.closeButton = document.getElementById("expanded-plot-panel-close-button")
-        this.plotDiv = document.getElementById("expanded-plot-panel-plot")
-        
-        this.invisibleOverlay = document.createElement('div')
-        this.invisibleOverlay.classList.add("absolute","z-40","top-0","left-0","h-screen","w-screen")
 
-        this.setEventListeners()
+        this.panelDiv = document.getElementById(panelId);
+        this.closeButton = document.getElementById("expanded-plot-panel-close-button");
+        this.plotDiv = document.getElementById("expanded-plot-panel-plot");
+        
+        this.invisibleOverlay = document.createElement('div');
+        this.invisibleOverlay.classList.add("absolute","z-40","top-0","left-0","h-screen","w-screen");
+
+        this.setEventListeners();
     }
 
     setEventListeners() {
@@ -479,7 +474,7 @@ class ExpandedPlotPanel {
     }
 
     open() {
-        document.body.appendChild(this.invisibleOverlay)
+        document.body.appendChild(this.invisibleOverlay);
 
         if (this.panelDiv.classList.contains("hidden")) {
             this.panelDiv.classList.remove("hidden");
@@ -487,7 +482,7 @@ class ExpandedPlotPanel {
     }
     
     close() {
-        document.body.removeChild(this.invisibleOverlay)
+        document.body.removeChild(this.invisibleOverlay);
 
         if (!this.panelDiv.classList.contains("hidden")) {
             this.panelDiv.classList.add("hidden");
@@ -527,16 +522,12 @@ class QueryForm {
         const selectedProperty = this.propertyFilter.getSelectedValue();
         const selectedCcll = this.ccllFilter.getSelectedValue();
 
-
-
-        const api =  SensorThingsAPI.getInstance(App.getInstance().apiEndpoint)
-
-
+        const api =  SensorThingsAPI.getInstance(App.getInstance().apiEndpoint);
 
         const dataValue = await api.getFilteredThings(selectedProperty,selectedCcll);
 
-        App.getInstance().getMapManager().displayMarkers(dataValue)
-        App.getInstance().getMapManager().getDataPanel().close()
+        App.getInstance().getMapManager().displayMarkers(dataValue);
+        App.getInstance().getMapManager().getDataPanel().close();
         
     }
 
@@ -544,24 +535,24 @@ class QueryForm {
 }
 
 class DataOptionsForm {
+
     constructor(formId,numOfObsSelectId,makePlotCallback) {
     
         this.form = document.getElementById(formId);
         this.numOfObsFilter = new Filter(numOfObsSelectId);
         this.makePlotCallback = makePlotCallback;
-        this.datastream = null
+        this.datastream = null;
 
-        this.numOfObsFilter.addOption('50','50')
-        this.numOfObsFilter.addOption('100','100')
-        this.numOfObsFilter.addOption('1000','1000')
+        this.numOfObsFilter.addOption('50','50');
+        this.numOfObsFilter.addOption('100','100');
+        this.numOfObsFilter.addOption('1000','1000');
 
         this.setEventListeners();
         
     }
 
     setEventListeners() {
-        // this.form.addEventListener('submit', async e => await this.handleSubmit(e));
-        this.numOfObsFilter.getSelect().addEventListener('change',async e => await this.handleChange(e))
+        this.numOfObsFilter.getSelect().addEventListener('change',async e => await this.handleChange(e));
     }
 
     setDatastream(datastream) {
@@ -596,7 +587,7 @@ class Filter {
     }
 
     setSelectedIndex(index) {
-        this.select.selectedIndex = index
+        this.select.selectedIndex = index;
     }
 
     addOption(value,innerText) {
@@ -617,7 +608,7 @@ class Filter {
 
 class SensorThingsAPI {
 
-    static instance = null
+    static instance = null;
     
     constructor(apiEndpoint) {
          this.apiEndpoint = apiEndpoint;
@@ -637,8 +628,9 @@ class SensorThingsAPI {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-        // console.log(data)
+
         return data;
+
       } catch (error) {
         console.error('Error:', error);
         throw error;
@@ -650,7 +642,7 @@ class SensorThingsAPI {
 
         const queryURL = `${this.apiEndpoint}/Datastreams(${datastreamID})/Observations?$orderby=phenomenonTime desc&$select=phenomenonTime,result,id&$top=${numberOfObs}`;
         const data = await this.fetchData(queryURL);
-        console.log(queryURL)
+        
         return data.value;
     }
 
@@ -658,7 +650,6 @@ class SensorThingsAPI {
     async addObservedPropertyOptions(filter) {
 
         const queryURL = `${this.apiEndpoint}/ObservedProperties?$orderby=id&$select=id,name`;
-        // console.log(queryURL)
         const data = await this.fetchData(queryURL);
 
         data.value.forEach( (property) => {
@@ -666,7 +657,7 @@ class SensorThingsAPI {
             const optionValue = property['@iot.id'];
             const optionInnerText = property.name;
 
-            filter.addOption(optionValue,optionInnerText)
+            filter.addOption(optionValue,optionInnerText);
         
         })
     }
@@ -674,7 +665,6 @@ class SensorThingsAPI {
     async addCCLLOptions(filter) {
 
         const queryURL = `${this.apiEndpoint}/Things?$select=properties/CCLL&$orderby=properties/CCLL`;
-        // console.log(queryURL)
         const data = await this.fetchData(queryURL);
 
 
@@ -706,31 +696,21 @@ class SensorThingsAPI {
 
 
         if (propID != "-1") {
-            queryURL = `${queryURL}&$filter=Datastreams/ObservedProperty/id eq ${propID}`
+            queryURL = `${queryURL}&$filter=Datastreams/ObservedProperty/id eq ${propID}`;
             
-
             if (ccllValue != "-1") {
-
-                queryURL = `${queryURL} and properties/CCLL eq '${ccllValue}'`
+                queryURL = `${queryURL} and properties/CCLL eq '${ccllValue}'`;
             }
 
         } else {
-            
             if (ccllValue != "-1") {
-
-                queryURL = `${queryURL}&$filter=properties/CCLL eq '${ccllValue}'`
+                queryURL = `${queryURL}&$filter=properties/CCLL eq '${ccllValue}'`;
             }
         }
         
-
-
-
-        console.log(queryURL)
-       
-
         const data = await this.fetchData(queryURL);
         
-        return data.value
+        return data.value;
     }
 
     
