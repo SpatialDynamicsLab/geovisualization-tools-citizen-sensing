@@ -107,20 +107,53 @@ class MapManager {
         const [lng,lat] = thing.Locations[0].location.coordinates;
 
 
-        let popup = L.popup();
+        // let popup = L.popup();
         
-        let popupContent =  `<p class="font-semibold">${thing.name}</p><p>${thing.properties.CCLL}</p><p>Lng: ${lng}, Lat: ${lat}</p>`
+        let sensorsListString = "";
+        thing.Datastreams.forEach( (datastream,index) => {
+            if (index == 0) {
+                sensorsListString += datastream.Sensor.name
+            } else if (!sensorsListString.includes(datastream.Sensor.name)) {
+                sensorsListString += `, ${datastream.Sensor.name}`;
+            } 
+        })
+
+        const popupContent = document.createElement('div')
+        popupContent.classList.add("flex","flex-col")
+
+        let htmlContent =  `<div>
+                <h1 class="text-[16px] font-semibold"><span class="font-bold">Thing:</span> ${thing.name}</h1>
+                <p><span class="font-semibold">Sensor(s):</span> ${sensorsListString}</p>
+                <p><span class="font-semibold">CCLL:</span> ${thing.properties.CCLL}</p>
+                <p><span class="font-semibold">Lng, Lat:</span> ${lng}, ${lat}</p>
+            </div>
+        `
+        popupContent.insertAdjacentHTML('afterbegin',htmlContent)
+
+        const openDataPanelButton = document.createElement('button')
+        openDataPanelButton.innerText ="View Datastreams"
+        openDataPanelButton.classList.add("py-2","px-4","bg-gray-200","text-gray-800","font-medium","rounded","hover:bg-gray-300")
+
+        openDataPanelButton.addEventListener('click',e => {
+            this.dataPanel.open()});
+        
+        popupContent.addEventListener('click',e => {
+            this.dataPanel.open()
+            console.log("e")
+        })
+
+            
+        popupContent.appendChild(openDataPanelButton)
 
 
         const marker = L.marker([lat,lng])
-            .bindPopup(popupContent)
+            .bindPopup(popupContent,{keepInView: true});
 
-         
-        
+            
         marker.on('click', e => { 
             this.map.setView([lat,lng]);
             this.dataPanel.initDatastreamSelectionPage(thing);
-            this.dataPanel.open();
+            this.dataPanel.goToDatastreamsSelectionPage();
 
         })
 
@@ -143,6 +176,7 @@ class DataPanel {
         this.backButton = document.getElementById("back-button");
 
         this.datastreamsSelectionPage = document.getElementById("datastreams-selection-page")
+        this.datastreamsSelectionPageSubtitle = document.getElementById("datastreams-selection-page-subtitle")
         this.datastreamsButtonsDiv = document.getElementById("datastreams-buttons")
         
         this.datastreamResultsPage = document.getElementById("datastream-results-page")
@@ -170,11 +204,14 @@ class DataPanel {
 
         this.clearElementContent(this.datastreamsButtonsDiv)
 
+        this.datastreamsSelectionPageSubtitle.innerText = `(${thing.name})`
+
         thing.Datastreams.forEach( (datastream) => {
 
             const datastreamButton = document.createElement('button')
-            datastreamButton.innerText = datastream.name
-            datastreamButton.classList.add("m-4","py-2","px-4","bg-gray-200","text-gray-800","font-medium","rounded","hover:bg-gray-300")
+            datastreamButton.innerText = `${datastream.name} (${datastream.Sensor.name})`
+            // datastreamButton.innerText = datastream.name
+            datastreamButton.classList.add("m-4","py-2","px-4","bg-gray-200","text-gray-800","font-medium","rounded","hover:bg-gray-300","w-full")
            
             datastreamButton.addEventListener('click', async e => {
 
@@ -232,7 +269,7 @@ class DataPanel {
       
     }
 
-    plotObservations(plotDiv,observations,parameter="",unit="",fontSize=11) {
+    plotObservations(plotDiv,observations,parameter="",unit="",fontSize=14,title="") {
 
         const [timeList, valueList] = observations.reduce(
             (lists, observation) => {
@@ -247,25 +284,56 @@ class DataPanel {
             x: timeList,
             y: valueList }]
         
-        const layout = {
-            margin: { t: 0 },
+
+        const yaxisTitle = `${parameter} (${unit})`;    
+        const adjustedYaxisTitleFontSize = this.adjustFontSize(yaxisTitle,18,plotDiv.offsetHeight,0.7);
+        // console.log(adjustedYaxisTitleFontSize)
+
+        let layout = {
+
+            font: {
+                family: 'Courier New, monospace',
+            },
+
+            margin: { 
+                t: 0, 
+                b: 0 
+            },
+
             xaxis: {
                 tickfont: {
                   size: fontSize
                 },
+                automargin: true
               },
+
             yaxis: {
                 tickfont: {
                     size: fontSize
                   },
                 title: {
-                    text: `${parameter} (${unit})`,
-                    font: {size: fontSize} 
+                    text: yaxisTitle,
+                    font: {
+                        size: adjustedYaxisTitleFontSize},
+
                 }
                 
             }
             
 
+        }
+
+        if (title!="") {
+
+            const adjustedTitleFontSize = this.adjustFontSize(title,20,plotDiv.offsetWidth,0.7)
+
+            layout.title = {
+                text: title,
+                font: {
+                    size: adjustedTitleFontSize
+                },
+                automargin: true
+            }
         }
 
         Plotly.newPlot(plotDiv,data,layout)
@@ -277,11 +345,26 @@ class DataPanel {
         const data = [{
             x: [],
             y: [] }]
-        
+            
+        const yaxisTitle = `${parameter} (${unit})`;    
+        const adjustedYaxisTitleFontSize = this.adjustFontSize(yaxisTitle,18,plotDiv.offsetHeight,0.7);
+
         const layout = {
-            margin: { t: 0 },
+            font: {
+                family: 'Courier New, monospace',
+            },
+            margin: {
+                t: 0,
+                b: 0
+            },
+            xaxis:{
+                automargin: true
+            },
             yaxis: {
-                title: `${parameter} (${unit})`
+                title: yaxisTitle,
+                font: {
+                    size: adjustedYaxisTitleFontSize
+                },
             }
 
         }
@@ -289,14 +372,33 @@ class DataPanel {
         Plotly.newPlot(plotDiv,data,layout)
     }
 
+    adjustFontSize(title, fontSize, divWidth, fontWidthHeightFactor) {
+
+        const wDiv = divWidth
+        const nC = title.length // Number of characters
+        const fsDefault = fontSize
+        const k = fontWidthHeightFactor // Factor associated to a font such as width=k*fontSize for a character
+        // console.log("wDiv",wDiv,"nC",nC,"fsDefault",fsDefault,"k",k)
+    
+        const fsMax = Math.floor((1/k)*wDiv/nC)
+        // console.log("fsMax",fsMax)
+    
+        const newFontSize = Math.min(fsDefault,fsMax)
+        // console.log("newFontSize",newFontSize)
+        return newFontSize;
+      } 
 
     expandPlot() {
 
+        console.log(this.selectedDatastream)
+
         const parameter = this.selectedDatastream.ObservedProperty.name
         const unit = this.selectedDatastream.unitOfMeasurement.symbol
+        const title = `${this.selectedDatastream.name} (${this.selectedDatastream.Sensor.name})`
 
         this.expandedPlotPanel.open();
-        this.plotObservations(this.expandedPlotPanel.getPlotDiv(),this.loadedObservations,parameter,unit,14);
+        console.log(this.expandedPlotPanel.getSize())
+        this.plotObservations(this.expandedPlotPanel.getPlotDiv(),this.loadedObservations,parameter,unit,14,title);
 
     }
 
@@ -306,6 +408,7 @@ class DataPanel {
     open() {
         this.goToDatastreamsSelectionPage()
         this.showElement(this.panelDiv)
+        console.log()
     }
 
     close() {
@@ -371,6 +474,10 @@ class ExpandedPlotPanel {
         return this.plotDiv
     }
 
+    getSize() {
+        return (this.panelDiv.offsetWidth,this.panelDiv.offsetHeight)
+    }
+
     open() {
         document.body.appendChild(this.invisibleOverlay)
 
@@ -393,7 +500,7 @@ class QueryForm {
     constructor(formId,propertySelectId,ccllSelectId) {
     
         this.form = document.getElementById(formId);
-
+        
         this.propertyFilter = new Filter(propertySelectId);
         this.ccllFilter = new Filter(ccllSelectId);
 

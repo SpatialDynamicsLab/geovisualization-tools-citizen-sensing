@@ -9,36 +9,36 @@
     </head>
     
 
-    <body class="bg-purple-900 text-center">
+    <body class="flex flex-col h-screen text-center bg-cyan-700 ">
         
-        <form id="query-form" class="flex flex-wrap w-screen ">
+        <form id="query-form" class="basis-16 flex flex-wrap items-center w-screen">
 
             <div class="flex basis-96">
                 <p class="my-auto ml-4 mr-3 flex-shrink-0">Observed Property</p>
-                <select id="property-select" class="my-4 px-4 basis-56 rounded">
+                <select id="property-select" class="p-1 basis-56 rounded bg-gray-100">
                   <option value="-1">(All)</option>
                 </select>
             </div>
             
             <div class="flex basis-52">
                 <p class="my-auto ml-4 mr-3">CCLL</p>
-                <select id="ccll-select" class="my-4 px-4 basis-36 rounded">
+                <select id="ccll-select" class="p-1 basis-36 rounded bg-gray-100">
                    <option value="-1">(All)</option>
                 </select>
             </div>
             
-            <button class="m-4 py-2 px-4 bg-gray-200 font-medium rounded hover:bg-gray-300">Query</button>
+            <button class="m-4 px-4 py-1 bg-gray-200 font-medium rounded hover:bg-gray-300">Query</button>
 
         </form>
         
-
-        <div id="map-wrapper" class="relative h-[1000px] max-h-[85vh] mx-2">
+ 
+        <div id="main-content" class="relative mx-2 mb-2 basis-full">
     
             <div id="map" class="z-0 h-full"></div>
         
             
             <div id="data-panel"
-                class="absolute hidden z-30 top-0 right-0 flex-col basis-full items-center h-full max-w-[700px] w-full overflow-x-hidden overflow-y-scroll bg-white bg-opacity-90 shadow-inner border border-gray-300">
+                class="absolute hidden z-30 right-0 top-0 flex-col items-center w-full max-w-[500px] h-full overflow-x-hidden overflow-y-scroll bg-white bg-opacity-90 shadow-inner border border-gray-300">
                    
                     <div class="absolute top-0 right-0 flex-row-reverse">
                         <button id="back-button" class="m-1 px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">Back</button>
@@ -50,7 +50,8 @@
 
                     <div id="datastreams-selection-page" class="p-4 flex flex-col items-center">
                         <h2 class="py-4 text-center text-xl font-semibold">Datastreams</h2>
-                        <div id="datastreams-buttons" class="p-4 flex flex-col items-center "></div>
+                        <h3 id="datastreams-selection-page-subtitle" class="text-center text-sm font-semibold"></h3>
+                        <div id="datastreams-buttons" class="px-8 py-4 flex-grow flex flex-col justify-around items-center "></div>
                     </div>  
                         
                     
@@ -62,26 +63,25 @@
                         <form id="data-options-form" class="p-4 flex">
                             <p class="mx-4 text-sm">Number of observations to show:</p>
 
-                            <select id="number-observations-select" class="mx-4 px-4 py-0.5 min-w-[50px] text-sm rounded">
+                            <select id="number-observations-select" class="mx-4 px-4 py-0.5 min-w-[50px] text-sm rounded border border-gray-200 bg-gray-100">
                             </select>
                         
-                            <!-- <button class="m-4 px-4 py-0.5 bg-gray-200 font-medium rounded hover:bg-gray-300">Ok</button> -->
                 
                         </form>
 
-                        <div id="data-panel-plot" class="self-center h-52 w-full bg-white" ></div>
+                        <div id="data-panel-plot" class="self-center w-full h-52 bg-white" ></div>
 
-                        <button id="expand-button" class="m-auto px-4 py-0.5 bg-gray-200 font-medium rounded hover:bg-gray-300">Expand plot</button>
+                        <button id="expand-button" class="m-auto my-4 px-4 py-0.5 bg-gray-200 font-medium rounded hover:bg-gray-300">Expand plot</button>
                     </div>
 
             </div>
 
 
-            <div id="expanded-plot-panel" class="absolute hidden z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[91.666667%] max-w-[1200px] w-full bg-white shadow-inner border border-gray-300">
+            <div id="expanded-plot-panel" class="absolute hidden z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[130vh] h-[95%] bg-white shadow-inner border border-gray-300">
                 
-                <button id="expanded-plot-panel-close-button" class="absolute top-0 right-0 m-1 px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">X</button>
+                <button id="expanded-plot-panel-close-button" class="absolute z-[60] selection:top-0 right-0 m-1 px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">X</button>
                 
-                <div id="expanded-plot-panel-plot" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[91.666667%] w-full"></div>
+                <div id="expanded-plot-panel-plot" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[91.666667%] overflow-clip "></div>
                 
             </div>
             
