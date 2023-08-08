@@ -384,14 +384,12 @@ class DataPanel {
 
     expandPlot() {
 
-        console.log(this.selectedDatastream)
-
         const parameter = this.selectedDatastream.ObservedProperty.name
         const unit = this.selectedDatastream.unitOfMeasurement.symbol
         const title = `${this.selectedDatastream.name} (${this.selectedDatastream.Sensor.name})`
 
         this.expandedPlotPanel.open();
-        console.log(this.expandedPlotPanel.getSize())
+
         this.plotObservations(this.expandedPlotPanel.getPlotDiv(),this.loadedObservations,parameter,unit,14,title);
 
     }
