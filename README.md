@@ -18,9 +18,9 @@ Clone the project in your local repository. Make sure you have Node.js installed
 
 ## How to use
 
-The following is a tutorial for the user experience of the app. Do not hesitate to check the [SensorThings API standard documentation](https://developers.sensorup.com/docs/) to better understand how the fetched data is organised.
+The following is a tutorial for the user experience of the app. Do not hesitate to check the [SensorThings API standard documentation](https://developers.sensorup.com/docs/) to better understand how the fetched data is organised. Basically, a *Thing* is an object composed of one or several sensors that is associated with one *Location*. Sensors can record one or several *Datastreams*, which are the entities associated to a specific *ObservedProperty* (a parameter) and a set of *Observations* in this *Thing*. 
 
-Upon loading the page, the user can see an empty web map centered on Europe, on top of which is a bar containing a form enabling the user to make a request for *Things* to the STA API. The user has the option to either filter by *Observed Property* and/or *CCLL* (Coastal City Living Lab), or to let the default *All* value of the selects to request all the Things of the API. The "Query" button then has to be clicked to send the request.
+Upon loading the page, the user can see an empty web map centered on Europe, on top of which is a bar containing a form enabling the user to make a request for *Things* to the STA API. The user has the option to either filter by *Observed Property* (only the *Things* that possess a *Datastream* of the chosen property will be shown) and/or *CCLL* (Coastal City Living Lab), or to let the default *All* value of the selects to request all the Things of the API. The "Query" button then has to be clicked to send the request.
 
 At this point, markers associated to the requested *Things* appear on the map. They can be clicked on, summoning a popup displaying some details about the *Thing*: its name, sensors, CCLL, and geographic coordinates, as well as a "View Datastreams" button. The popup always stays in view while opened and can be closed by clicking anywhere on the map.
 
