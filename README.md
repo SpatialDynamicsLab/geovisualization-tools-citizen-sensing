@@ -30,7 +30,7 @@ At this point, markers associated to the requested *Things* appear on the map. T
 
 By clicking on it (or on the whole popup), a panel is opened on the side of the page. A first page lists the *Datastreams* of the selected *Thing* as buttons. When one is clicked, a new page is opened on the panel, displaying the data of the *Datastream*: its *Sensor*, its *Observed Property* and its unit, and most imporantly, a graph of its last 50 *Observations*. There is an option to change the numbers of plotted *Observations* to 100 or 1000 (making a new request to the API). 
 
-<img src="/README_images/img1.png" alt= "screenshot of the app" width="480px" height="212px">
+<img src="/README_images/img1.png" alt= "screenshot of the app" width="720px" height="319px">
 
 <img src="/README_images/img2.png" alt= "screenshot of the app" width="960px" height="425px">
 
