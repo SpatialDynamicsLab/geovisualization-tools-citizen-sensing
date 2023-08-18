@@ -1,8 +1,8 @@
 ## Geospatial data visualisation tool for citizen sensing and citizen science initiatives
 
-Development of a WebGIS tool to visualise citizen-generated data from low-cost sensors, DIY sensors, citizen science activities, etc. provided in the form of the OGC [SensorThings API standard](https://developers.sensorup.com/docs/) (STA). This app is more specifically made to visualise climate data related to coastal hazards from the [SCORE](https://score-eu-project.eu/) project given by the API endpoint: https://score.sta.tero.gr/v1.0/
-This app is intended to be embeded in a SCORE web site. 
+Development of a WebGIS tool to visualise citizen-generated data from low-cost sensors, DIY sensors, citizen science activities, etc. provided in the form of the OGC [SensorThings API standard](https://developers.sensorup.com/docs/) (STA). This app is more specifically made to visualise climate data related to coastal hazards from the [SCORE](https://score-eu-project.eu/) project given by the API endpoint: https://score.sta.tero.gr/v1.0/ . This app is intended to be embeded in a SCORE website. 
 
+<img src="/README_images/img2.png" alt= "screenshot of the app" width="960px" height="425px">
 Libraries used:
 * [TailwindCSS](https://tailwindcss.com) (as a Node.js dependency)
 * [Leaflet.js](https://leafletjs.com/) (as a loaded script)
