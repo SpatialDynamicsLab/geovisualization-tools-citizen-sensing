@@ -1,6 +1,7 @@
 ## Geospatial data visualizations tool for citizen sensing and citizen science initiatives
 
-Development of a WebGIS tool to visualise citizen-generated data from low-cost sensors, DIY sensors, citizen science activities, etc. provided in the form of the OGC [SensorThings API standard](https://developers.sensorup.com/docs/) (STA). This app is more specifically made to visualise climate data related to coastal hazards from the SCORE project given by the API endpoint: https://score.sta.tero.gr/v1.0/
+Development of a WebGIS tool to visualise citizen-generated data from low-cost sensors, DIY sensors, citizen science activities, etc. provided in the form of the OGC [SensorThings API standard](https://developers.sensorup.com/docs/) (STA). This app is more specifically made to visualise climate data related to coastal hazards from the [SCORE](https://score-eu-project.eu/) project given by the API endpoint: https://score.sta.tero.gr/v1.0/
+This app is intended to be embeded in a SCORE 
 
 Libraries used:
 * [TailwindCSS](https://tailwindcss.com) (as a Node.js dependency)
@@ -19,8 +20,9 @@ Clone the project in your local repository. Make sure you have Node.js installed
 
 The following is a tutorial for the user experience of the app.
 
-Upon loading the page, the user can see an empty web map centered on Europe with on top a bar containing a form enabling the user to make a request for *Things* to the STA API. The user has the option to either filter by *Observed Property* and/or *CCLL*, or to let the default *All* value of the selects to request all the Things of the API. The *Query* button then has to be clicked to send the request.
+Upon loading the page, the user can see an empty web map centered on Europe, on top of which is a bar containing a form enabling the user to make a request for *Things* to the STA API. The user has the option to either filter by *Observed Property* and/or *CCLL* (Coastal City Living Lab), or to let the default *All* value of the selects to request all the Things of the API. The "Query" button then has to be clicked to send the request.
 
+At this point, markers associated to the requested *Things* appear on the map. They can be clicked on, summoning a popup displaying some details about the *Thing*: its name, sensors, CCLL, and geographic coordinates, as well as a "View Datastreams" button. By clicking on it -- or on the whole popup --
 
 
 
