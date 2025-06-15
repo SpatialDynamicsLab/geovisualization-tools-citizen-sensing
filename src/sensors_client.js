@@ -9,7 +9,7 @@ class App {
         
         this.apiEndpoint = "https://score.sta.tero.gr/v1.0";
         this.queryForm = new QueryForm(
-            "query-form","property-select","ccll-select");
+            "query-form","property-select","thing-select");
         this.mapManager = new MapManager(
             [[54.209196,13.671665],[38.543655,-8.509294]]);
     }
@@ -30,8 +30,8 @@ class App {
 
         const api = SensorThingsAPI.getInstance(this.apiEndpoint);
 
-        api.addCCLLOptions(this.queryForm.getCCLLFilter());
         api.addObservedPropertyOptions(this.queryForm.getPropertyFilter());
+        // api.addThingNameOptions(this.queryForm.getThingFilter());
 
     }
 }
@@ -50,10 +50,13 @@ class MapManager {
 
         this.map = L.map('map').fitBounds(this.defaultBounds);
         
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            }).addTo(this.map);
+        // L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        //     maxZoom: 19,
+        //     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; CARTO © OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(this.map);
 
         this.markerGroup = L.featureGroup().addTo(this.map);
 
@@ -111,8 +114,6 @@ class MapManager {
                 Thing:</span> ${thing.name}</h1>
                 <p><span class="font-semibold">
                 Sensor(s):</span> ${sensorsListString}</p>
-                <p><span class="font-semibold">
-                CCLL:</span> ${thing.properties.CCLL}</p>
                 <p><span class="font-semibold">
                 Lng, Lat:</span> ${lng}, ${lat}</p>
             </div>
@@ -512,12 +513,11 @@ class ExpandedPlotPanel {
 
 class QueryForm {
 
-    constructor(formId,propertySelectId,ccllSelectId) {
-    
+    constructor(formId,propertySelectId) {
         this.form = document.getElementById(formId);
         
         this.propertyFilter = new Filter(propertySelectId);
-        this.ccllFilter = new Filter(ccllSelectId);
+        this.thingFilter = new Filter("thing-input");
 
         this.setEventListeners();
         
@@ -527,8 +527,8 @@ class QueryForm {
         return this.propertyFilter;
     }
 
-    getCCLLFilter() {
-        return this.ccllFilter;
+    getThingFilter() {
+        return this.thingFilter;
     }
 
     setEventListeners() {
@@ -538,13 +538,17 @@ class QueryForm {
     async handleSubmit(event) {
 
         event.preventDefault();
-
         const selectedProperty = this.propertyFilter.getSelectedValue();
-        const selectedCcll = this.ccllFilter.getSelectedValue();
-
+        const selectedThingName = this.thingFilter.getSelectedValue();
+        console.log("Thing name selected:", selectedThingName);
         const api =  SensorThingsAPI.getInstance(App.getInstance().apiEndpoint);
+        const dataValue = await api.getFilteredThings(selectedProperty, selectedThingName);
 
-        const dataValue = await api.getFilteredThings(selectedProperty,selectedCcll);
+        if (!selectedProperty && (!selectedThingName || selectedThingName.length === 0)) {
+            alert("Please select at least one device or property.");
+            return;
+        }
+
 
         App.getInstance().getMapManager().displayMarkers(dataValue);
         App.getInstance().getMapManager().getDataPanel().close();
@@ -567,7 +571,7 @@ class DataOptionsForm {
         this.numOfObsFilter.addOption('1000','1000');
 
         this.setEventListeners();
-        
+
     }
 
     setEventListeners() {
@@ -590,35 +594,43 @@ class DataOptionsForm {
         await this.makePlotCallback(this.datastream,selectedNumber);
         
     }
+
 }
 
 class Filter {
-
     constructor(selectId) {
         this.select = document.getElementById(selectId);
+    }
+
+    getSelectedValue() {
+        if (this.select && this.select.tomselect) {
+            const value = this.select.tomselect.getValue();
+            if (Array.isArray(value)) {
+                return value[0] || '';  // return first selected item
+            }
+            return value;
+        }
+
+        return this.select?.value || '';
+    }
+
+
+
+    addOption(value, innerText) {
+        // not needed for TomSelect w/ async loading, but kept for other filters
+        const option = document.createElement('option');
+        option.value = value;
+        option.innerText = innerText;
+        this.select.appendChild(option);
+    }
+
+    setSelectedIndex(index) {
+        // not used with TomSelect input
     }
 
     getSelect() {
         return this.select;
     }
-
-    getSelectedValue() {
-        return this.select.value;
-    }
-
-    setSelectedIndex(index) {
-        this.select.selectedIndex = index;
-    }
-
-    addOption(value,innerText) {
-        let option = document.createElement('option');
-        option.value = value;
-        option.innerText = innerText;
-
-        this.select.appendChild(option);
-
-    }
-
 }
 
 
@@ -652,13 +664,18 @@ class SensorThingsAPI {
         throw error;
       }
     }
-  
 
-    async getLastObservations(datastreamID,numberOfObs) {
+    async getLastObservations(datastreamID, numberOfObs) {
+        let top = parseInt(numberOfObs);
 
-        const queryURL = `${this.apiEndpoint}/Datastreams(${datastreamID})/Observations?$orderby=phenomenonTime desc&$select=phenomenonTime,result,id&$top=${numberOfObs}`;
+        // Fallback default if not a valid number
+        if (isNaN(top) || top <= 0) {
+            console.warn(`Invalid numberOfObs "${numberOfObs}", defaulting to 100`);
+            top = 100;
+        }
+
+        const queryURL = `${this.apiEndpoint}/Datastreams(${datastreamID})/Observations?$orderby=phenomenonTime desc&$select=phenomenonTime,result,id&$top=${top}`;
         const data = await this.fetchData(queryURL);
-        
         return data.value;
     }
 
@@ -675,67 +692,83 @@ class SensorThingsAPI {
 
             filter.addOption(optionValue,optionInnerText);
         
-        })
-    }
-
-    async addCCLLOptions(filter) {
-
-        const queryURL = `${this.apiEndpoint}/Things?$select=properties/CCLL&$orderby=properties/CCLL`;
-        const data = await this.fetchData(queryURL);
-
-
-        let previousCCLLName = "";
-        let currentCCLLName = "";
-
-        data.value.forEach( (thing) => {
-
-            currentCCLLName = thing.properties.CCLL;
-
-            if (currentCCLLName != previousCCLLName) {
-                const optionValue = currentCCLLName;
-                const optionInnerText = currentCCLLName;
-
-                filter.addOption(optionValue,optionInnerText);
-
-                previousCCLLName = currentCCLLName;
-            }
-        })
+        });
     }
 
 
-    async getFilteredThings(propID,ccllValue) {
+    async getFilteredThings(propID, thingNamesRaw) {
+        let queryURL = `${this.apiEndpoint}/Things?$expand=Locations,Datastreams/ObservedProperty,Datastreams/Sensor&$orderby=id`;
+        const filters = [];
 
-        let queryURL = this.apiEndpoint;
-
-        queryURL = `${queryURL}/Things?$expand=Locations,Datastreams/ObservedProperty,Datastreams/Sensor&$orderby=id`;
-
-
-        if (propID != "-1") {
-            queryURL = `${queryURL}&$filter=Datastreams/ObservedProperty/id eq ${propID}`;
-            
-            if (ccllValue != "-1") {
-                queryURL = `${queryURL} and properties/CCLL eq '${ccllValue}'`;
-            }
-
-        } else {
-            if (ccllValue != "-1") {
-                queryURL = `${queryURL}&$filter=properties/CCLL eq '${ccllValue}'`;
-            }
+        // Clean propID
+        const cleanPropID = (typeof propID === "string" ? propID.trim() : "");
+        if (cleanPropID && cleanPropID !== "-1" && cleanPropID !== "undefined") {
+            filters.push(`Datastreams/ObservedProperty/id eq ${cleanPropID}`);
         }
-        
+
+        // Handle thing names (and sanitize any '' entries)
+        let thingNames = [];
+        if (Array.isArray(thingNamesRaw)) {
+            thingNames = thingNamesRaw.flatMap(name => name.split(',').map(n => n.trim()));
+        } else if (typeof thingNamesRaw === 'string') {
+            thingNames = thingNamesRaw.split(',').map(n => n.trim());
+        }
+
+        // Remove empty or invalid entries
+        thingNames = thingNames.filter(n => n && n.length > 0);
+
+        if (thingNames.length > 0) {
+            const nameFilters = thingNames.map(name =>
+                `name eq '${name.replace(/'/g, "''")}'`
+            );
+            filters.push(`(${nameFilters.join(' or ')})`);
+        }
+
+        // Only add filter if there’s something to filter
+        if (filters.length > 0) {
+            queryURL += `&$filter=${encodeURIComponent(filters.join(' and '))}`;
+        }
+
+        console.log("Final STA Query:", decodeURIComponent(queryURL));
+
         const data = await this.fetchData(queryURL);
-        
         return data.value;
     }
 
-    
 }
 
 /*-----------------------------------------------------------------------------------------*/
 /*---------------------------------------- MAIN -------------------------------------------*/    
 /*-----------------------------------------------------------------------------------------*/
+window.addEventListener("DOMContentLoaded", () => {
+    const app = App.getInstance();
+    app.run();
 
-const app = App.getInstance();
-app.run();
+    const deviceInput = document.getElementById("thing-input");
+
+    if (deviceInput) {
+        new TomSelect("#thing-input", {
+            plugins: ['remove_button'],
+            valueField: 'name',
+            labelField: 'name',
+            searchField: 'name',
+            maxOptions: 100,
+            maxItems: null,
+            create: false,
+            allowEmptyOption: true,
+            load: function (query, callback) {
+                if (!query.length) return callback();
+
+                const safeQuery = query.replace(/'/g, "''");  // escape single quotes
+
+                fetch(`https://score.sta.tero.gr/v1.0/Things?$filter=startswith(name,'${safeQuery}')&$select=name&$top=100`)
+                    .then(response => response.json())
+                    .then(json => callback(json.value || []))
+                    .catch(() => callback());
+            }
+        });
+    }
+});
+
 
 

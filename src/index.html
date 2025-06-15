@@ -2,33 +2,38 @@
 <html lang="fr">
     <head>
         <meta charset="UTF-8">
-        <title>SCORE Sensors Visualisation</title>
+        <title>STA Sensing Devices Visualisation</title>
         <link rel="stylesheet" href="../dist/style.css">
+        <!-- Tom Select CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet" />
         <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"
                 charset="utf-8"></script>
     </head>
-
-    <body class="flex flex-col h-screen text-center bg-cyan-700 ">
+    <body class="flex flex-col h-screen text-center bg-[#008480]" style="background-color: #008480;">
         <form id="query-form" class="basis-16 flex flex-wrap items-center w-screen">
-           <div class="flex mr-4">
-                <p class="my-auto ml-4 mr-3 flex-shrink-0 font-bold text-white text-lg">
+
+            <!-- Thing/device input (TomSelect) -->
+            <div class="m-4 flex flex-col flex-grow max-w-[100px] font-extrabold text-2xl">
+                <input id="thing-input"
+                       placeholder="Search device name..."
+                       class="w-full rounded bg-gray-100" />
+            </div>
+
+            <!-- Property filter -->
+            <div class="flex items-center mr-4">
+                <p class="m-4 flex-shrink-0 text-white text-lg whitespace-nowrap">
                     Observed Property</p>
-                <select id="property-select" class="p-1 basis-56 rounded bg-gray-100">
+                <select id="property-select" class="p-1 w-[250px] rounded bg-gray-100">
                     <option value="-1">(All)</option>
                 </select>
             </div>
 
-            <div class="flex basis-52">
-                <p class="my-auto ml-4 mr-3 font-bold text-white text-lg">CCLL</p>
-                <select id="ccll-select" class="p-1 basis-36 rounded bg-gray-100">
-                    <option value="-1">(All)</option>
-                </select>
-            </div>
-            <button class="m-4 px-4 py-1 bg-gray-200 font-medium rounded
-            hover:bg-gray-300">Query</button>
+            <!-- Button -->
+            <button class="m-4 px-4 py-1 bg-gray-200 font-medium rounded hover:bg-gray-300">
+                Query
+            </button>
 
         </form>
-
         <div id="main-content" class="relative mx-2 mb-2 basis-full">
             <div id="map" class="z-0 h-full border rounded-xl border-white"></div>
         
@@ -109,6 +114,8 @@
         </div>
 
         <!-- Scripts -->
+        <!-- Tom Select JS -->
+        <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
         <script src="https://unpkg.com/leaflet@1.9.2/dist/leaflet.js"
         integrity="sha256-o9N1jGDZrf5tS+Ft4gbIK7mYMipq9lqpVJ91xHSyKhg="
                 crossorigin=""></script>
