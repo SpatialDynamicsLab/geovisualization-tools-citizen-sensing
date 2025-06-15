@@ -9,13 +9,17 @@
         <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"
                 charset="utf-8"></script>
     </head>
-    <body class="flex flex-col h-screen text-center bg-[#008480]" style="background-color: #008480;">
+    <body class="flex flex-col h-screen text-center bg-[#008480]">
+        <div id="loader-spinner" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 hidden">
+          <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-white border-opacity-75"></div>
+        </div>
+
         <form id="query-form" class="basis-16 flex flex-wrap items-center w-screen">
 
             <!-- Thing/device input (TomSelect) -->
-            <div class="m-4 flex flex-col flex-grow max-w-[100px] font-extrabold text-2xl">
+            <div class="m-4 flex flex-col flex-grow max-w-[600px] font-extrabold text-3xl">
                 <input id="thing-input"
-                       placeholder="Search device name..."
+                       placeholder="Search by sensing device name..."
                        class="w-full rounded bg-gray-100" />
             </div>
 

@@ -1,4 +1,3 @@
-
 /*-----------------------------------------------------------------------------------------*/
 /*--------------------------------------- CLASSES -----------------------------------------*/ 
 /*-----------------------------------------------------------------------------------------*/
@@ -35,6 +34,15 @@ class App {
 
     }
 }
+
+function showLoader() {
+    document.getElementById('loader-spinner')?.classList.remove('hidden');
+}
+
+function hideLoader() {
+    document.getElementById('loader-spinner')?.classList.add('hidden');
+}
+
 
 class MapManager {
 
@@ -264,18 +272,27 @@ class DataPanel {
 
     }
 
+    async makePlot(datastream, numberOfObs) {
+        showLoader();
+        try {
+            const api = SensorThingsAPI.getInstance(App.getInstance().apiEndpoint);
+            this.loadedObservations = await api.getLastObservations(
+                datastream["@iot.id"], numberOfObs
+            );
 
-    async makePlot(datastream,numberOfObs) {
-        const api = SensorThingsAPI.getInstance(
-            App.getInstance().apiEndpoint);
-        this.loadedObservations = await api.getLastObservations(
-            datastream["@iot.id"], numberOfObs);
-
-        
-        this.plotObservations(this.plotDiv,this.loadedObservations,
-            datastream.ObservedProperty.name,datastream.unitOfMeasurement.symbol);
-      
+            this.plotObservations(
+                this.plotDiv, this.loadedObservations,
+                datastream.ObservedProperty.name,
+                datastream.unitOfMeasurement.symbol
+            );
+        } catch (err) {
+            console.error("Plot failed:", err);
+            alert("Failed to load observations.");
+        } finally {
+            hideLoader();
+        }
     }
+
 
     plotObservations(plotDiv,observations,parameter="",
                      unit="",fontSize=14,title="") {
@@ -536,23 +553,31 @@ class QueryForm {
     }
 
     async handleSubmit(event) {
-
         event.preventDefault();
-        const selectedProperty = this.propertyFilter.getSelectedValue();
-        const selectedThingName = this.thingFilter.getSelectedValue();
-        console.log("Thing name selected:", selectedThingName);
-        const api =  SensorThingsAPI.getInstance(App.getInstance().apiEndpoint);
-        const dataValue = await api.getFilteredThings(selectedProperty, selectedThingName);
+        showLoader();
 
-        if (!selectedProperty && (!selectedThingName || selectedThingName.length === 0)) {
-            alert("Please select at least one device or property.");
-            return;
+        try {
+            const selectedProperty = this.propertyFilter.getSelectedValue();
+            const selectedThingName = this.thingFilter.getSelectedValue();
+
+            console.log("Thing name selected:", selectedThingName);
+            const api =  SensorThingsAPI.getInstance(App.getInstance().apiEndpoint);
+            const dataValue = await api.getFilteredThings(selectedProperty, selectedThingName);
+
+            if (!selectedProperty && (!selectedThingName || selectedThingName.length === 0)) {
+                alert("Please select at least one device or property.");
+                return;
+            }
+
+            App.getInstance().getMapManager().displayMarkers(dataValue);
+            App.getInstance().getMapManager().getDataPanel().close();
+
+        } catch (error) {
+            console.error("Failed to fetch things:", error);
+            alert("Something went wrong fetching data.");
+        } finally {
+            hideLoader();
         }
-
-
-        App.getInstance().getMapManager().displayMarkers(dataValue);
-        App.getInstance().getMapManager().getDataPanel().close();
-        
     }
 
 }
@@ -667,12 +692,6 @@ class SensorThingsAPI {
 
     async getLastObservations(datastreamID, numberOfObs) {
         let top = parseInt(numberOfObs);
-
-        // Fallback default if not a valid number
-        if (isNaN(top) || top <= 0) {
-            console.warn(`Invalid numberOfObs "${numberOfObs}", defaulting to 100`);
-            top = 100;
-        }
 
         const queryURL = `${this.apiEndpoint}/Datastreams(${datastreamID})/Observations?$orderby=phenomenonTime desc&$select=phenomenonTime,result,id&$top=${top}`;
         const data = await this.fetchData(queryURL);
