@@ -4,21 +4,19 @@
 
 class App {
     static instance = null;
-    constructor() {
-        
-        this.apiEndpoint = "https://score.sta.tero.gr/v1.0";
-        this.queryForm = new QueryForm(
-            "query-form","property-select","thing-select");
-        this.mapManager = new MapManager(
-            [[54.209196,13.671665],[38.543655,-8.509294]]);
+    constructor(apiEndpoint) {
+        this.apiEndpoint = apiEndpoint;
+        this.queryForm = new QueryForm("query-form", "property-select", "thing-select");
+        this.mapManager = new MapManager([[54.209196, 13.671665], [38.543655, -8.509294]]);
     }
 
-    static getInstance() {
-        if (!App.instance) {
-            App.instance = new App();
-          }
-          return App.instance; 
+    static getInstance(apiEndpoint = null) {
+        if (!App.instance && apiEndpoint) {
+            App.instance = new App(apiEndpoint);
+        }
+        return App.instance;
     }
+
 
     getMapManager() {
         return this.mapManager;
@@ -667,6 +665,7 @@ class SensorThingsAPI {
          this.apiEndpoint = apiEndpoint;
     }
 
+
     static getInstance(apiEndpoint) {
         if (!SensorThingsAPI.instance) {
             SensorThingsAPI.instance = new SensorThingsAPI(apiEndpoint);
@@ -760,34 +759,69 @@ class SensorThingsAPI {
 /*---------------------------------------- MAIN -------------------------------------------*/    
 /*-----------------------------------------------------------------------------------------*/
 window.addEventListener("DOMContentLoaded", () => {
-    const app = App.getInstance();
+  const modal = document.getElementById("sta-url-modal");
+  const modalContent = document.getElementById("sta-url-modal-content");
+  const input = document.getElementById("sta-url-input");
+  const errorMsg = document.getElementById("sta-url-error");
+  const submitBtn = document.getElementById("sta-url-submit");
+
+  const STORAGE_KEY = "lastStaUrl";
+
+  // Check localStorage and prefill if valid
+  const storedUrl = localStorage.getItem(STORAGE_KEY);
+  if (storedUrl && /^https?:\/\/.+\/v1\.(0|1)\/?$/.test(storedUrl)) {
+    input.value = storedUrl;
+  }
+
+  // Animate modal appearance
+  setTimeout(() => {
+    modalContent.classList.remove("opacity-0", "scale-95");
+    modalContent.classList.add("opacity-100", "scale-100");
+  }, 50);
+
+  submitBtn.addEventListener("click", () => {
+    const url = input.value.trim();
+    const isValid = /^https?:\/\/.+\/v1\.(0|1)\/?$/.test(url);
+
+    if (!isValid) {
+      errorMsg.classList.remove("hidden");
+      return;
+    }
+
+    // Store cleaned URL
+    const cleanUrl = url.replace(/\/+$/, "");
+    localStorage.setItem(STORAGE_KEY, cleanUrl);
+
+    // Hide modal + cleanup
+    modal.classList.add("hidden");
+    errorMsg.classList.add("hidden");
+
+    const app = App.getInstance(cleanUrl);
     app.run();
 
     const deviceInput = document.getElementById("thing-input");
-
     if (deviceInput) {
-        new TomSelect("#thing-input", {
-            plugins: ['remove_button'],
-            valueField: 'name',
-            labelField: 'name',
-            searchField: 'name',
-            maxOptions: 100,
-            maxItems: null,
-            create: false,
-            allowEmptyOption: true,
-            load: function (query, callback) {
-                if (!query.length) return callback();
+      new TomSelect("#thing-input", {
+        plugins: ['remove_button'],
+        valueField: 'name',
+        labelField: 'name',
+        searchField: 'name',
+        maxOptions: 100,
+        maxItems: null,
+        create: false,
+        allowEmptyOption: true,
+        load: function (query, callback) {
+          if (!query.length) return callback();
+          const safeQuery = query.replace(/'/g, "''");
 
-                const safeQuery = query.replace(/'/g, "''");  // escape single quotes
-
-                fetch(`https://score.sta.tero.gr/v1.0/Things?$filter=startswith(name,'${safeQuery}')&$select=name&$top=100`)
-                    .then(response => response.json())
-                    .then(json => callback(json.value || []))
-                    .catch(() => callback());
-            }
-        });
+          fetch(`${cleanUrl}/Things?$filter=startswith(name,'${safeQuery}')&$select=name&$top=100`)
+            .then(response => response.json())
+            .then(json => callback(json.value || []))
+            .catch(() => callback());
+        }
+      });
     }
+  });
 });
-
 
 

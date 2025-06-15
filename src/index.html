@@ -117,6 +117,35 @@
             </div>
         </div>
 
+        <!-- STA URL Modal -->
+        <div id="sta-url-modal" class="fixed inset-0 bg-[#008480] bg-opacity-50 flex items-center justify-center z-50">
+          <div id="sta-url-modal-content"
+               class="w-[60%] transform scale-95 opacity-0 transition-all duration-300
+               ease-out px-8 py-6 bg-white rounded-2xl max-w-md shadow-2xl space-y-4">
+
+            <h2 class="text-xl font-semibold text-gray-800 text-center mt-2 mb-2">
+              Enter SensorThings API URL
+            </h2>
+
+            <input
+              id="sta-url-input"
+              type="text"
+              placeholder="https://your-sta-endpoint/v1.0"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+
+            <!-- Error message (hidden by default) -->
+            <p id="sta-url-error" class="text-red-600 text-sm hidden">
+              Please enter a valid STA URL ending in <code>/v1.0</code> or <code>/v1.1</code>
+            </p>
+
+            <button id="sta-url-submit" type="button"
+                    class="w-full bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded-full transition-colors">
+              Start
+            </button>
+          </div>
+        </div>
+
         <!-- Scripts -->
         <!-- Tom Select JS -->
         <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
