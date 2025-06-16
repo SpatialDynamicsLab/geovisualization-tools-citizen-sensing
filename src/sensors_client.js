@@ -823,5 +823,3 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
-
